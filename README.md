@@ -12,16 +12,17 @@ Example usage 1:
 
 Example usage 2:
 * To generate a file with per-residue Q-scores:
-* Command line: "qscore #1 toVolume #2 useGui False mapResolution 3.1"
+* Command line: <srong>"qscore #1 toVolume #2 useGui False mapResolution 3.1"</strong>
 * #1 refers to residues to calculate Q-scores for
 * #2 refers to volume
 * mapResolution is used to generate a 'expected Q-score' baseline to compare resulting Q-scores to
 * Command line: "qscore #1 toVolume #2 useGui False mapResolution 3.1 window 3"
 * window 3 averages Q-scores from +/- 3 connected residues
+* will write a .txt file with [model path]/[name of model]__Q__[name of map].txt - can open this to plot per-residue Q-scores
 
 Example usage 3:
 * To show residues/atoms and densities:
-* In command line: "q #1:100-110 showResInMap #6 distNear 4"
+* In command line: <srong>"q #1:100-110 showResInMap #6 distNear 4"</srong>
 * #1:100-110 refers to residues in model #1 to show
 * showResInMap #6 is where to take densities from
 * (optional) distNear 4 takes otehr residues with atoms within 4Å
