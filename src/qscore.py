@@ -453,7 +453,7 @@ def report_results2(residues, volume, log=False, filename=None, map_resolution=3
             sumQ, sumN = 0.0, 0.0
             for res in ress :
                 for at in res.atoms :
-                    if at.element.name != 1 :
+                    if at.element.number != 1 :
                         sumQ += at.Q_score
                         sumN += 1.0
             avgQ = sumQ / sumN
@@ -469,7 +469,9 @@ def report_results2(residues, volume, log=False, filename=None, map_resolution=3
         for rt, ress in iter ( resm.items() ) :
             log ( "ChainId %s - %s" % (ch, rt) )
             if rt == "Protein" :
+
                 log ( f'{sep}Name{sep}Number{sep}Q_backbone{sep}Q_side_chain{sep}Q_residue{sep}Q_expected@{map_resolution:.2f}A' )
+
                 for ri, res in enumerate ( ress ) :
                     if ri > 0 :
                         lastRes = ress[ri-1]
@@ -500,8 +502,43 @@ def report_results2(residues, volume, log=False, filename=None, map_resolution=3
                     log ( f'{sep}{res.name}{sep}{res.number}{sep}{Q_bb_str}{sep}{Q_sc_str}{sep}{res.Q_mean:.4f}{sep}{Q_exp:.4f}' )
 
             elif rt == "Nucleic" :
-                log ( f'' )
 
+                log ( f'{sep}Name{sep}Number{sep}Q_backbone{sep}Q_sugar{sep}Q_base{sep}Q_nucleotide{sep}Q_expected@{map_resolution:.2f}A' )
+
+                for ri, res in enumerate ( ress ) :
+                    if ri > 0 :
+                        lastRes = ress[ri-1]
+                        d = res.number - lastRes.number
+                        if d > 1 :
+                            for i in range (1,d) :
+                                log ( f'{sep}{sep}{lastRes.number+i}{sep}{sep}{sep}{sep}{sep}{Q_exp:.4f}' )
+                    #Q_bb_str = "%.4f"%res.Q_sc if len(res.scAtoms)>0 else : ""
+
+                    Q_res, N = 0.0, 0.0
+                    for i in range ( max(0,ri-window), min(ri+window+1,len(ress)) ) :
+                        Q_res += ress[i].Q_mean
+                        N += 1
+                    Q_res_str = "%.4f" % (Q_res/N)
+
+                    Q_bb, N = 0.0, 0.0
+                    for i in range ( max(0,ri-window), min(ri+window+1,len(ress)) ) :
+                        if len(ress[i].bbAtoms) > 0 :
+                            Q_bb += ress[i].Q_bb; N += 1
+                    Q_bb_str = "%.4f" % (Q_bb/N) if N > 0 else ""
+
+                    Q_sugar, N = 0.0, 0.0
+                    for i in range ( max(0,ri-window), min(ri+window+1,len(ress)) ) :
+                        if len(ress[i].sugarAtoms) > 0 :
+                            Q_sugar += ress[i].Q_sugar; N += 1
+                    Q_sugar_str = "%.4f" % (Q_sugar/N) if N > 0 else ""
+
+                    Q_base, N = 0.0, 0.0
+                    for i in range ( max(0,ri-window), min(ri+window+1,len(ress)) ) :
+                        if len(ress[i].baseAtoms) > 0 :
+                            Q_base += ress[i].Q_base; N += 1
+                    Q_base_str = "%.4f" % (Q_base/N) if N > 0 else ""
+
+                    log ( f'{sep}{res.name}{sep}{res.number}{sep}{Q_bb_str}{sep}{Q_sugar_str}{sep}{Q_base_str}{sep}{res.Q_mean:.4f}{sep}{Q_exp:.4f}' )
 
 
             else :

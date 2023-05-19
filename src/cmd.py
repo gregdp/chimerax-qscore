@@ -9,7 +9,33 @@ from chimerax.atomic import ResiduesArg
 
 def qscore(session, residues, to_volume=None, use_gui=True, reference_gaussian_sigma=0.6, points_per_shell=8,
             max_shell_radius=2.0, shell_radius_step=0.1, include_hydrogens=False, randomize_shell_points=True,
-            log_details=False, output_file=None, map_resolution=3.0, window=0):
+            log_details=False, output_file=None, map_resolution=3.0, window=0,
+            show_res_in_map=None, show_atoms_in_map=None, dist_near=None):
+
+
+    if show_res_in_map != None :
+        print ( "showing res in map" )
+        print ( show_res_in_map )
+        from chimerax.atomic import Atoms
+        resAtoms = Atoms()
+        for r in residues :
+            resAtoms = resAtoms + r.atoms
+        from .other import showAtoms, MapFromId
+        showAtoms ( session, None, resAtoms, dist_near, show_res_in_map, only=True )
+        return
+
+    if show_atoms_in_map != None :
+        print ( "showing atoms in map" )
+        print ( show_atoms_in_map )
+        from chimerax.atomic import Atoms
+        atoms = Atoms ( [] )
+        for r in residues :
+            atoms = atoms + r.atoms
+        from .other import showAtoms, MapFromId
+        showAtoms ( session, atoms, None, dist_near, show_atoms_in_map, only=True )
+        return
+
+
     if to_volume is None:
         from chimerax.core.errors import UserError
         raise UserError("Must specify a map to compare the model to!")
@@ -76,7 +102,10 @@ qscore_desc = CmdDesc(
         ("log_details", BoolArg),
         ("output_file", FileNameArg),
         ("map_resolution", Bounded(FloatArg, min=0.1, max=1000.0)),
-        ("window", Bounded(IntArg, min=0, max=5))
+        ("window", Bounded(IntArg, min=0, max=5)),
+        ("show_res_in_map", MapArg),
+        ("show_atoms_in_map", MapArg),
+        ("dist_near", FloatArg),
     ]
     )
 
