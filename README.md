@@ -25,7 +25,7 @@ Example usage 3:
 * (optional) distNear 4 takes otehr residues with atoms within 4Å
 
 Example maps and models:
-* Streptavidin: 1.7Å -- emd:31083, pdb:7efc -- "open 31083 form emdb; open 7efc from pdb"
+* Streptavidin: 1.7Å -- emd:31083, pdb:7efc -- "open 31083 from emdb; open 7efc from pdb"
 * Sars2 Orf3a: 2.9Å -- emd: 22136 pdb: 6xdc -- 
 * Ribozyme: 3.1Å -- emd:31385 pdb:7ez0 --
 
