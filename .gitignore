@@ -31,7 +31,6 @@ src/docs/
 bin/
 build/
 develop-eggs/
-dist/
 eggs/
 .eggs/
 lib/
