@@ -1,7 +1,7 @@
 Implementation of the map-model Q-Score algorithm (https://www.nature.com/articles/s41592-020-0731-1) in ChimeraX.
 
 To install
-* download latest version .whl file from dist/ folder
+* download latest version .whl file from <a href=https://github.com/gregdp/chimerax-qscore/tree/main/dist>dist</a> folder
 * in ChimeraX command line: toolshed install [path to .whl file]
 
 Example usage 1:
@@ -26,6 +26,6 @@ Example usage 3:
 
 Example maps and models:
 * Streptavidin: 1.7Å -- emd:31083, pdb:7efc -- "open 31083 from emdb; open 7efc from pdb"
-* Sars2 Orf3a: 2.9Å -- emd: 22136 pdb: 6xdc -- 
-* Ribozyme: 3.1Å -- emd:31385 pdb:7ez0 --
+* Sars2 Orf3a: 2.9Å -- emd: 22136 pdb: 6xdc -- "open 22136 from emdb; open 6xdc from pdb"
+* Ribozyme: 3.1Å -- emd:31385 pdb:7ez0 -- "open 31385 from emdb; open 7ez0 from pdb"
 
