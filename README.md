@@ -31,3 +31,8 @@ Example maps and models:
 * Sars2 Orf3a: 2.9Å -- emd: 22136 pdb: 6xdc -- "open 22136 from emdb; open 6xdc from pdb"
 * Ribozyme: 3.1Å -- emd:31385 pdb:7ez0 -- "open 31385 from emdb; open 7ez0 from pdb"
 
+Other useful mousemode commands:
+* mousemode command rightMode pivot (command+Right click to change rotation center - use Alt for windows)
+* mousemode shift rightMode zone (zones map around what is clicked on)
+* mousemode shift wheelMode contour (you can change contour level with Shift+Wheel)
+* mousemode setting contour speed .2 (how much contour level changes per wheel move)
