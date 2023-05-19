@@ -18,7 +18,7 @@ Example usage 2:
 * mapResolution is used to generate a 'expected Q-score' baseline to compare resulting Q-scores to
 * Command line: "qscore #1 toVolume #2 useGui False mapResolution 3.1 window 3"
 * window 3 averages Q-scores from +/- 3 connected residues
-* will write a .txt file with [model path]/[name of model]__Q__[name of map].txt - can open this to plot per-residue Q-scores
+* generates file [model path]/[name of model]--Q--[name of map].txt - can open this to plot per-residue Q-scores
 
 Example usage 3:
 * To show residues/atoms and densities:
