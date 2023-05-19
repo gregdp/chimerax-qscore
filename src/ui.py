@@ -32,12 +32,12 @@ class QScoreWindow(MainToolWindow):
         self.main_widget = QScoreWidget(self.session, self)
         main_layout.addWidget(self.main_widget)
         self.manage(placement='side')
-    
+
     def cleanup(self):
         while len(self._registered_widgets):
             w = self._registered_widgets.pop()
             w.cleanup()
-        
+
     def register_widget(self, w):
         self._registered_widgets.append(w)
 
@@ -55,7 +55,7 @@ class QScoreWidget(QFrame):
 
         hl = self._handlers = []
         hl.append(session.triggers.add_handler('remove models', self._models_removed_cb))
-        
+
 
         self._selected_model = None
         self._selected_volume = None
@@ -68,46 +68,78 @@ class QScoreWidget(QFrame):
         self.setLayout(layout)
         bf = self.top_button_frame = QFrame()
         layout.addWidget(bf)
-        bl = DefaultHLayout()
-        bf.setLayout(bl)
-        bl.addWidget(QLabel('Atomic model: '))
-        asb = AtomicStructureMenuButton(session, self)
-        bl.addWidget(asb)
-        bl.addWidget(QLabel('Chain: '))
-        cb = self.chain_button = ChainChooserButton()
-        self.triggers.add_handler('selected model changed', cb._selected_model_changed_cb)
-        cb.triggers.add_handler('selected chain changed', self.update_plot)
-        bl.addWidget(cb)
-        bl.addStretch()
-        bl.addWidget(QLabel('Map: '))
-        vb = VolumeMenuButton(session, self)
-        bl.addWidget(vb)
+        if 1 :
+            bl = DefaultHLayout()
+            bf.setLayout(bl)
+            bl.addWidget(QLabel('Atomic model: '))
+            asb = AtomicStructureMenuButton(session, self)
+            bl.addWidget(asb)
 
-        pw = self.plot_widget = QScorePlot()
-        layout.addWidget(pw)
+            bl.addWidget(QLabel('Chain: '))
+            cb = self.chain_button = ChainChooserButton()
+            self.triggers.add_handler('selected model changed', cb._selected_model_changed_cb)
+            cb.triggers.add_handler('selected chain changed', self.update_plot)
+            bl.addWidget(cb)
 
-        ptl = DefaultHLayout()
-        ptt = self._plot_text_data = QLabel()
-        ptl.addWidget(ptt)
-        layout.addLayout(ptl)
-        pw.initialize_hover_text(ptt)
+            #bl.addStretch()
 
-        rbl = DefaultHLayout()
-        rb = self.recalc_button = QPushButton('Calculate')
-        rbl.addWidget(rb)
-        rbl.addWidget(QLabel('Display: '))
-        ms = self.mode_selector = AverageModeChooser()
-        rbl.addWidget(ms)
-        ms.triggers.add_handler('mode changed', self.update_plot)
-        rbl.addStretch()
-    
-        rb.clicked.connect(self.recalc)
-        layout.addLayout(rbl)
+            bl.addWidget(QLabel('Map: '))
+            vb = VolumeMenuButton(session, self)
+            bl.addWidget(vb)
+
+
+        if 1 :
+            from . import qplot
+            pw = self.plot_widget = qplot.QScorePlot()
+            layout.addWidget(pw)
+
+            ptl = DefaultHLayout()
+            ptt = self._plot_text_data = QLabel()
+            ptl.addWidget(ptt)
+            layout.addLayout(ptl)
+            pw.initialize_hover_text(ptt)
+
+        if 1 :
+            rbl = DefaultHLayout()
+
+            rb = self.recalc_button = QPushButton('Calculate')
+            rb.clicked.connect(self.recalc)
+            rbl.addWidget(rb)
+
+            rb = self.recalc_button = QPushButton('View')
+            rb.clicked.connect(self.view)
+            rbl.addWidget(rb)
+
+            _label = QLabel('Plot: ')
+            rbl.addWidget ( _label )
+
+            #ms = self.mode_selector = AverageModeChooser()
+            #rbl.addWidget(ms)
+            #ms.triggers.add_handler('mode changed', self.update_plot)
+            #rbl.addStretch()
+
+            cb = self.plot_menu = PlotMenu()
+            #self.triggers.add_handler('plot type changed', cb._plot_type_changed_cb)
+            cb.triggers.add_handler('plot type changed', self.update_plot)
+            rbl.addWidget(cb)
+
+            _label = QLabel('Ribbon: ')
+            rbl.addWidget ( _label )
+
+            cb = self.ribbon_menu = RibbonMenu()
+            #self.triggers.add_handler('plot type changed', cb._plot_type_changed_cb)
+            cb.triggers.add_handler('ribbon color changed', self.update_ribbon)
+            rbl.addWidget(cb)
+
+            rbl.addStretch()
+
+            layout.addLayout(rbl)
+
 
         bl = DefaultVLayout()
         bl.addWidget(QLabel('ADVANCED SETTINGS'))
         bhl = QGridLayout()
-        
+
         tt = '<span>For each atom, the algorithm will try to find this number of points in each radial shell closer to that atom than any other.</span>'
         l = QLabel('Points per shell: ')
         l.setToolTip(tt)
@@ -161,7 +193,9 @@ class QScoreWidget(QFrame):
 
         bl.addLayout(bhl)
         layout.addLayout(bl)
-    
+
+        self.SetVis( session )
+
 
     @property
     def points_per_shell(self):
@@ -170,23 +204,23 @@ class QScoreWidget(QFrame):
     @points_per_shell.setter
     def points_per_shell(self, value):
         self._points_per_shell_spin_box.setValue(value)
-    
+
     @property
     def max_shell_radius(self):
         return self._max_shell_radius_spin_box.value()
-    
+
     @max_shell_radius.setter
     def max_shell_radius(self, value):
         self._max_shell_radius_spin_box.setValue(value)
-    
+
     @property
     def shell_radius_step(self):
         return self._shell_radius_step_spin_box.value()
-    
+
     @shell_radius_step.setter
     def shell_radius_step(self, value):
         self._shell_radius_step_spin_box.setValue(value)
-    
+
     @property
     def reference_sigma(self):
         return self._ref_sigma_spin_box.value()
@@ -194,17 +228,87 @@ class QScoreWidget(QFrame):
     @reference_sigma.setter
     def reference_sigma(self, value):
         self._ref_sigma_spin_box.setValue(value)
-    
+
     @property
     def log_details(self):
         return self._log_details_checkbox.isChecked()
-    
+
     @log_details.setter
     def log_details(self, flag):
         self._log_details_checkbox.setChecked(flag)
-    
 
 
+    def SetVis ( self, session ) :
+
+        from chimerax.atomic.structure import AtomicStructure
+        visMols = []
+        for mod in session.models :
+            if mod.visible and type(mod) == AtomicStructure :
+                visMols.append ( mod )
+        if len ( visMols ) > 0 :
+            print ( "... selecting model: %s" % visMols[0].name )
+            self.selected_model = visMols[0]
+
+        visChains = {}
+        if self.selected_model != None :
+            for res in self.selected_model.residues :
+                if res.polymer_type == res.PT_NONE :
+                    if res.atoms[0].display == True :
+                        visChains[res.chain_id] = 1
+                elif hasattr (res, 'ribbon_display') and res.ribbon_display == True :
+                    visChains[res.chain_id] = 1
+        if len(visChains) > 0 :
+            ch = list(visChains.keys())[0]
+            print ( "... selecting chain: %s" % ch )
+            self.chain_button.selected_model = self.selected_model
+            self.chain_button.selected_chain_id = ch
+
+        from chimerax.map.volume import Volume
+        visMods = []
+        for mod in session.models :
+            if type(mod) == Volume and mod.display == True :
+                visMods.append ( mod )
+        if len ( visMods ) > 0 :
+            print ( "... selecting volume: %s" % visMods[0].name )
+            self.selected_volume = visMods[0]
+
+
+
+    def view (self, *_, log_details=None, output_file=None, echo_command=True) :
+
+        if log_details is None:
+            log_details = self.log_details
+            print ( " - no log details" )
+
+        print ( "view" )
+        m, v = self.selected_model, self.selected_volume
+
+        if m is None or v is None:
+            from chimerax.core.errors import UserError
+            raise UserError('Must select a model and map first!')
+
+        print ( "%s chain in %s" % (m.name, v.name) )
+
+        for mod in m.session.models :
+            if mod != v and mod != m :
+                mod.display = False
+
+        for r in m.residues :
+            if r.polymer_type == r.PT_PROTEIN or r.polymer_type == r.PT_NUCLEIC :
+                r.ribbon_display = True
+                for at in r.atoms :
+                    at.display = False
+            else :
+                for at in r.atoms :
+                    at.display = True
+
+        v.display = True
+        for s in v.surfaces :
+            s.display = True
+        m.display = True
+        from chimerax.core.commands import run
+        run(self.session, f'volume unzone #{v.id_string}', log=False)
+        run(self.session, f'view', log=False)
 
 
 
@@ -231,7 +335,7 @@ class QScoreWidget(QFrame):
         if self.selected_model in removed:
             self.selected_model = None
         if self.selected_volume in removed:
-            self.selected_volume = None        
+            self.selected_volume = None
 
     @property
     def selected_model(self):
@@ -249,11 +353,11 @@ class QScoreWidget(QFrame):
                 run(session, f'style #{model.id_string} stick; color #{model.id_string} byhet')
         self._selected_model = model
         self.triggers.activate_trigger('selected model changed', model)
-    
+
     @property
     def selected_volume(self):
         return self._selected_volume
-    
+
     @selected_volume.setter
     def selected_volume(self, v):
         if self._selected_volume != v:
@@ -280,27 +384,33 @@ class QScoreWidget(QFrame):
             return
         import numpy
         cid = self.chain_button.selected_chain_id
-        average_mode = self.mode_selector.mode
+
+        ptype = self.plot_menu.sel_type
+
         residues = [r for r in self._residue_map.keys() if r.chain_id==cid]
+
         atoms = self._query_atoms
         chain_mask = atoms.residues.chain_ids==cid
         ascores = self._atom_scores
         from chimerax.atomic import Residue, Residues
         residues = Residues(residues)
-        if average_mode == 'Whole residues':
+
+        atom_mask = None
+        if ptype == 'Residue - Average':
             atom_mask = None
             scores = [self._residue_map[r][0] for r in residues]
-        elif average_mode == 'Worst atoms':
+        elif ptype == 'Residue - Lowest':
             atom_mask = None
             scores = [self._residue_map[r][1] for r in residues]
-        elif average_mode == 'Backbone':
+        elif ptype == 'Backbone':
             atom_mask = atoms.is_backbones()
-        elif average_mode == 'Sidechains':
+        elif ptype == 'Sidechains':
             atom_mask = atoms.is_side_onlys
-        elif average_mode == 'Ligands':
+        elif ptype == 'Ligands':
             atom_mask = atoms.residues.polymer_types == Residue.PT_NONE
         else:
-            raise RuntimeError(f'Unrecognised averaging mode: "{average_mode}"')
+            print (f'Unrecognised averaging mode: "{ptype}"')
+            #raise RuntimeError()
         if atom_mask is not None:
             atoms = atoms[numpy.logical_and(atom_mask, chain_mask)]
             ascores = ascores[atom_mask]
@@ -309,15 +419,80 @@ class QScoreWidget(QFrame):
             for r in residues:
                 indices = atoms.indices(r.atoms)
                 indices = indices[indices!=-1]
-                scores.append(ascores[indices].mean())            
+                scores.append(ascores[indices].mean())
+
         pw.update_data(residues, scores, self.selected_volume)
+
+
+    def update_ribbon ( self, *_ ) :
+
+        print ( "ui -- %s" % self.ribbon_menu.sel_type )
+        rtype = self.ribbon_menu.sel_type
+
+        if self.selected_model is None or self.selected_volume is None or self._residue_map is None:
+            print ( " - no model or map selected" )
+            return
+
+        print ( "view" )
+        m, v = self.selected_model, self.selected_volume
+
+        if m is None or v is None:
+            from chimerax.core.errors import UserError
+            raise UserError('Must select a model and map first!')
+
+        print ( "%s chain in %s" % (m.name, v.name) )
+
+        from numpy import array
+        Ch, Cl = array([100, 255, 100, 1]), array([255, 100, 100, 1])
+        Qh, Ql = 1.0, 0.0
+
+        for r in m.residues :
+            if r.polymer_type == r.PT_PROTEIN or r.polymer_type == r.PT_NUCLEIC :
+                #r.ribbon_display = True
+                Qres = None
+                if hasattr ( r, 'Q_mean' ) and rtype == "Residue - Average" :
+                    Qres = r.Q_mean
+                elif hasattr ( r, 'Q_min' ) and rtype == "Residue - Lowest" :
+                    Qres = r.Q_min
+                if Qres != None :
+                    f = (Qres - Ql) / (Qh - Ql)
+                    if f > 1.0 : f = 1.0
+                    if f < 0.0 : f = 0.0
+                    C = Ch * f + Cl * (1.0-f)
+                    try :
+                        r.ribbon_color = [C[0],C[1],C[2],255]
+                    except :
+                        print ( C )
+                #for at in r.atoms :
+                #    at.display = False
+            else :
+                for at in r.atoms :
+                    #at.display = True
+                    if hasattr ( at, 'Q_score' ) :
+                        f = (r.Q_mean - Ql) / (Qh - Ql)
+                        C = Ch * f + Cl * (1.0-f)
+                        at.color = [C[0],C[1],C[2],255]
+
+        v.display = True
+        for s in v.surfaces :
+            s.display = True
+        m.display = True
+
+        from chimerax.core.commands import run
+        #run(self.session, f'volume unzone #{v.id_string}', log=False)
+        #run(self.session, f'view', log=False)
+
+
+
 
     def cleanup(self):
         while len(self._handlers):
             h = self._handlers.pop()
             h.remove()
 
-class AverageModeChooser(QFrame):
+
+class AverageModeChooser(QFrame) :
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         from chimerax.core.triggerset import TriggerSet
@@ -350,232 +525,16 @@ class AverageModeChooser(QFrame):
                         break
                 self.triggers.activate_trigger('mode changed', mname)
             mb.toggled.connect(lambda:_cb(mb))
-    
+
     @property
     def mode(self):
         for mode, button in self.modes.items():
             if button.isChecked():
                 return mode
-    
 
 
 
-class QScorePlot(QFrame):
-    MIN_ZOOM = 25
-    DEFAULT_ZOOM = 250
-    ZOOM_SCALE = 1.1
-    MAX_ZOOM_STEPS_PER_FRAME=5
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        from matplotlib.figure import Figure
-        from matplotlib.backends.backend_qtagg import (
-            FigureCanvasQTAgg as FigureCanvas,
-            )
-        from matplotlib.widgets import Slider
-        from matplotlib.colors import Normalize
-        import numpy
-        self.setMinimumHeight(150)
-        self._slider_blocked = False
-        ml = self.main_layout = DefaultVLayout()
-        self.setLayout(ml)
 
-        fig = self.plot = Figure()
-        axes = self.axes = fig.add_subplot(111)
-        axes.autoscale(enable=False)
-        axes.set_ylim(0,1)
-        axes.set_xlim(0, self.DEFAULT_ZOOM)
-        fig.subplots_adjust(bottom=0.25)
-
-        self.volume = None
-
-        fig.tight_layout(rect=(0,0.1,1,1))
-
-        self.residues = []
-        resnum = self.residue_numbers = numpy.zeros(2, dtype=numpy.int32)-1
-        qscore = self.qscores = numpy.array([0,1], dtype=numpy.float32)
-        def _picker(scatter, mouse_event, x_radius=1):
-            from matplotlib.backend_bases import MouseButton
-            if mouse_event.button != MouseButton.LEFT:
-                return False, dict()
-            import numpy
-            if mouse_event.inaxes != self.axes:
-                return False, dict()
-            if mouse_event.xdata is None:
-                return False, dict()
-            x = mouse_event.xdata
-            resnums = scatter.get_offsets().T[0]
-            d = numpy.sqrt((x - resnums)**2)
-            closest = d.min()
-            if closest > x_radius:
-                return False, dict()
-            ind = numpy.argmin(d)
-            return True, dict(ind=ind)
-            
-            
-        s = axes.scatter(resnum,qscore, s=4, c=qscore, cmap='inferno_r', picker=_picker)
-        self._scatter = s
-
-        canvas = self.canvas = FigureCanvas(fig)
-        
-        canvas.mpl_connect('scroll_event', self.zoom)
-        canvas.mpl_connect('pick_event', self.on_pick)
-
-        ml.addWidget(canvas)
-
-        hpos = self._hpos_slider = QScrollBar(Qt.Orientation.Horizontal)
-        hpos.setRange(0,0)
-        ml.addWidget(hpos)
-
-        hpos.valueChanged.connect(self._slider_update)
-
-        canvas.draw()
-
-    def initialize_hover_text(self, target):
-        self._hover_text_target = target
-
-        def _hover(event, x_radius=1):
-            if not len(self.residues):
-                target.setText('')
-                return
-            if event.inaxes != self.axes:
-                target.setText('')
-                return
-            import numpy
-            x = event.xdata
-            resnums = self._scatter.get_offsets().T[0]
-            d = numpy.sqrt((x-resnums)**2)
-            closest = d.min()
-            if closest > x_radius:
-                target.setText('')
-                return
-            ind = numpy.argmin(d)
-            r = self.residues[ind]
-            if r.deleted:
-                target.setText('{residue deleted}')
-                return
-            target.setText(f'{r.name} /{r.chain_id}:{r.number}\tQ: {self.qscores[ind]:.3f}')
-            return
-        self.canvas.mpl_connect('motion_notify_event', _hover)
-
-
-    def _slider_update(self, val):
-        if not len(self.residues) or self._slider_blocked:
-            return
-        axes = self.axes
-        xmin, xmax = axes.get_xlim()
-        xrange = xmax-xmin
-        axes.set_xlim([val,val+xrange])
-        self.canvas.draw_idle()
-
-    def zoom(self, event=None):
-        if not len(self.residues):
-            return
-        axes = self.axes
-        hpos = self._hpos_slider
-        xmin, xmax = axes.get_xlim()            
-        xrange = xmax-xmin
-        resnum = self.residue_numbers
-        if xmax > resnum.max():
-            xmax = resnum.max()
-            xmin = xmax-xrange
-        if xmin < resnum.min():
-            xmin = resnum.min()
-            xmax = xmin+xrange
-
-        if event is not None:
-            if event.inaxes != self.axes:
-                return
-            xpoint = event.xdata
-            xfrac = (xpoint-xmin)/(xmax-xmin)
-            if event.button == 'up':
-                if xrange <= self.MIN_ZOOM:
-                    return
-                xrange = int(xrange/(self.ZOOM_SCALE*min(event.step, self.MAX_ZOOM_STEPS_PER_FRAME)))
-            else:
-                if xrange >= resnum.max()-resnum.min():
-                    return
-                xrange = int(xrange*self.ZOOM_SCALE*-min(event.step, self.MAX_ZOOM_STEPS_PER_FRAME))
-            new_xmin = int(max(min(resnum), min(resnum.max()-xrange, int(xpoint-xrange*xfrac))))
-        else:
-            new_xmin = max(resnum.min(), xmin)
-        new_xmax = min(max(resnum), new_xmin+xrange)
-        axes.set_xlim([new_xmin, new_xmax])
-        if xrange >= resnum.max()-resnum.min():
-            hpos.setRange(resnum.min(), resnum.min())
-        else:
-            with slot_disconnected(hpos.valueChanged, self._slider_update):
-                hpos.setRange(resnum.min(), resnum.max()-xrange)
-                hpos.setValue(xmin)
-        self.canvas.draw_idle()
-
-    def zoom_extents(self):
-        resnum = self.residue_numbers
-        self.axes.set_xlim([resnum.min(), resnum.max()])
-        self.zoom()
-
-    def on_pick(self, event):
-        if not len(self.residues):
-            return
-        ind = event.ind
-        residue = self.residues[ind]
-        if residue.deleted:
-            return
-        session = residue.session
-        session.selection.clear()
-        residue.atoms.selected = True
-        residue.atoms.intra_bonds.selected = True
-        atomspec = f'#!{residue.structure.id_string}/{residue.chain_id}:{residue.number}'
-        from chimerax.core.commands import run
-        from .clipper_compat import model_managed_by_clipper
-        m = residue.structure
-
-        if model_managed_by_clipper(m):
-            # Just view the model
-            run(session, f'view {atomspec}')
-        else:
-            # TODO: decide what to do here
-            from chimerax.atomic import Residues, concise_residue_spec
-            neighbors = set([residue])
-            # Quick and (very) dirty way to expand the selection. Should probably do something more efficient.
-            for _ in range(3):
-                new_neighbors = []
-                for n in neighbors:
-                    for nn in n.neighbors:
-                        if nn not in neighbors:
-                            new_neighbors.append(nn)
-                neighbors.update(new_neighbors)
-            residues = Residues(neighbors)
-            argspec = concise_residue_spec(session, residues)
-            run(session, f'surf zone #{self.volume.id_string} near {argspec} dist 3', log=False)
-            run(session, f'~cartoon #{m.id_string}; hide #{m.id_string}; show {argspec}; cartoon {argspec}&~{atomspec}', log=False)
-            run(session, f'view {atomspec}', log=False)            
-
-    def update_data(self, residues, scores, volume):
-        self.volume = volume
-        if residues is None or not len(residues):
-            self.residues = []
-            self._scatter.set_offsets([[0,0]])
-        else:
-            # Convert to a list so we can gracefully handle residue deletions in callbacks
-            import numpy
-            update_zoom = False
-            if len(residues) != len(self.residues):
-                update_zoom = True
-            self.residues = list(residues)
-            rmin = min(r.number for r in residues)
-            rmax = max(r.number for r in residues)
-            resnum = self.residue_numbers = numpy.array([r.number for r in residues])
-            self.qscores = scores
-            clipped_scores = numpy.array(scores, copy=True)
-            clipped_scores[clipped_scores<0] = 0
-            self._scatter.set_offsets(numpy.array([resnum, clipped_scores]).T)
-            self._scatter.set_array(scores)
-            # If the number of plotted residues changes, zoom to the full extent of the data.
-            if update_zoom:
-                self.zoom_extents()
-            else:
-                self.zoom(None)
-        self.canvas.draw_idle()
 
 class ChainChooserButton(QPushButton):
     def __init__(self, *args, **kwargs):
@@ -601,7 +560,7 @@ class ChainChooserButton(QPushButton):
     @property
     def selected_chain_id(self):
         return self._selected_chain_id
-    
+
     @selected_chain_id.setter
     def selected_chain_id(self, cid):
         self._selected_chain_id = cid
@@ -610,7 +569,7 @@ class ChainChooserButton(QPushButton):
         else:
             self.setText(cid)
         self.triggers.activate_trigger('selected chain changed', cid)
-        
+
 
     def _populate_available_chains_menu(self):
         cm = self.chain_menu
@@ -625,9 +584,104 @@ class ChainChooserButton(QPushButton):
             def _cb(*_, c = cid):
                 self.selected_chain_id = c
             a.triggered.connect(_cb)
-    
 
-            
+
+
+class PlotMenu (QPushButton) :
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        cm = self.menu = QMenu()
+        self.setMenu(cm)
+        cm.aboutToShow.connect(self._populate_menu)
+        from chimerax.core.triggerset import TriggerSet
+        t = self.triggers = TriggerSet()
+        t.add_trigger('plot type changed')
+        self.sel_type = "Residue - Average"
+
+    def _plot_type_changed_cb(self, trigger_name, m) :
+        print ( " - plot changed (%s) to %s" % (trigger_name, m) )
+
+    @property
+    def sel_type(self):
+        #print ( ".prop" )
+        return self._sel_type
+
+    @sel_type.setter
+    def sel_type(self, cid):
+        print ( ".setting - %s" % cid )
+        self._sel_type = cid
+        self.setText( cid )
+        self.triggers.activate_trigger('plot type changed', cid)
+
+    def _populate_menu(self) :
+        self.menu.clear()
+        list = ["Residue - Average",
+                "Residue - Lowest",
+                "Protein - Backbone",
+                "Protein - Side Chains",
+                "Nucleotide - Phosphate",
+                "Nucleotide - Sugar",
+                "Nucleotide - Base",
+                "Ligands",
+                "Ions",
+                "Water" ]
+        for li in list :
+            a = self.menu.addAction( li )
+            #if 0 and "Protein" in li :
+            if li == self._sel_type :
+                a.setCheckable(True)
+                a.setChecked(True)
+            def _cb(*_, c = li):
+                self.sel_type = c
+            a.triggered.connect(_cb)
+
+
+
+
+class RibbonMenu (QPushButton) :
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        cm = self.menu = QMenu()
+        self.setMenu(cm)
+        cm.aboutToShow.connect(self._populate_menu)
+        from chimerax.core.triggerset import TriggerSet
+        self.triggers = TriggerSet()
+        self.triggers.add_trigger('ribbon color changed')
+        self.sel_type = "Residue - Average"
+
+    def _plot_type_changed_cb(self, trigger_name, m) :
+        print ( " - plot changed (%s) to %s" % (trigger_name, m) )
+
+    @property
+    def sel_type(self):
+        #print ( ".prop" )
+        return self._sel_type
+
+    @sel_type.setter
+    def sel_type(self, cid):
+        print ( ".setting - %s" % cid )
+        self._sel_type = cid
+        self.setText( cid )
+        self.triggers.activate_trigger('ribbon color changed', cid)
+
+    def _populate_menu(self) :
+        self.menu.clear()
+        list = ["Residue - Average",
+                "Residue - Lowest",
+                "Protein - Backbone",
+                "Protein - Side Chains",
+                "Nucleotide - Phosphate",
+                "Nucleotide - Sugar",
+                "Nucleotide - Base"]
+        for li in list :
+            a = self.menu.addAction( li )
+            #if 0 and "Protein" in li :
+            if li == self._sel_type :
+                a.setCheckable(True)
+                a.setChecked(True)
+            def _cb(*_, c = li):
+                self.sel_type = c
+            a.triggered.connect(_cb)
 
 
 
@@ -650,11 +704,11 @@ class ModelMenuButtonBase(QPushButton):
         self._set_button_text(None)
         if trigger_name is not None:
             owner.triggers.add_handler(trigger_name, self._model_changed_cb)
-    
+
     def _find_available_models(self):
         models = self.session.models.list(type=self.model_type)
         return sorted(models, key=lambda m:m.id)
-    
+
     def _menu_entry_clicked(self, model=None):
         pass
 
@@ -663,7 +717,7 @@ class ModelMenuButtonBase(QPushButton):
 
     def _model_changed_cb(self, trigger_name, model):
         self._set_button_text(model)
-    
+
     def _set_button_text(self, model):
         if model is None:
             self.setText('None')
@@ -677,11 +731,11 @@ class AtomicStructureMenuButton(ModelMenuButtonBase):
     DEFAULT_TOOLTIP='Atomic model to use for Q-score calculation.'
     def __init__(self, session, owner, *args, **kwargs):
         from chimerax.atomic import AtomicStructure
-        super().__init__(session, owner, *args, 
+        super().__init__(session, owner, *args,
                         model_type=AtomicStructure,
-                        trigger_name='selected model changed', 
+                        trigger_name='selected model changed',
                         **kwargs)
-        
+
     def _menu_entry_clicked(self, model=None):
         self.owner.selected_model = model
 
@@ -700,11 +754,11 @@ class VolumeMenuButton(ModelMenuButtonBase):
     DEFAULT_TOOLTIP='Volume to use for Q-score calculation.'
     def __init__(self, session, owner, *args, **kwargs):
         from chimerax.map import Volume
-        super().__init__(session, owner, *args, 
+        super().__init__(session, owner, *args,
                          model_type=Volume,
                          trigger_name='selected volume changed',
                          **kwargs)
-    
+
     def _find_available_models(self):
         volumes = super()._find_available_models()
         from .clipper_compat import model_managed_by_clipper, map_associated_with_model
@@ -723,7 +777,7 @@ class VolumeMenuButton(ModelMenuButtonBase):
                     free.append(v)
             return (assoc, free, other)
         return ([], volumes, [])
-    
+
     def _menu_entry_clicked(self, model=None):
         self.owner.selected_volume=model
 
@@ -759,7 +813,7 @@ class VolumeMenuButton(ModelMenuButtonBase):
         else:
             for v in free:
                 add_entry(v)
-            
+
 class DefaultValueSpinBoxBase(QFrame):
     BOX_CLASS=None
 
@@ -783,28 +837,28 @@ class DefaultValueSpinBoxBase(QFrame):
 
     def reset(self):
         self.spin_box.setValue(self.default_value)
-    
+
     def value(self):
         return self.spin_box.value()
 
     def setValue(self, value):
         self.spin_box.setValue(value)
-    
+
     def setSingleStep(self, step):
         self.spin_box.setSingleStep(step)
-    
+
     def singleStep(self):
         return self.spin_box.singleStep()
 
     def maximum(self):
         return self.spin_box.maximum()
-    
+
     def setMaximum(self, value):
         self.spin_box.setMaximum(value)
-    
+
     def minimum(self):
         return self.spin_box.minimum()
-    
+
     def setMinimum(self, value):
         self.spin_box.setMinimum(value)
 
@@ -823,27 +877,3 @@ class DefaultValueDoubleSpinBox(DefaultValueSpinBoxBase):
 
     def setDecimals(self, value):
         self.spin_box.setDecimals(value)
-
-        
-
-from contextlib import contextmanager
-@contextmanager
-def slot_disconnected(signal, slot):
-    '''
-    Temporarily disconnect a slot from a signal using
-
-    .. code-block:: python
-    
-        with slot_disconnected(signal, slot):
-            do_something()
-    
-    The signal is guaranteed to be reconnected even if do_something() throws an error.
-    '''
-    try:
-        # disconnect() throws a TypeError if the method is not connected
-        signal.disconnect(slot)
-        yield
-    except TypeError:
-        pass
-    finally:
-        signal.connect(slot)
