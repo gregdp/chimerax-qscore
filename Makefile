@@ -39,9 +39,9 @@ endif
 ifeq ($(OS),Darwin)
 # Mac
 ifndef RELEASE
-CHIMERAX_APP ?= "/Users/greg/Desktop/ChimeraX-1.6.1.app/"
+CHIMERAX_APP ?= "/Users/greg/Desktop/ChimeraX-1.10.app"
 else
-CHIMERAX_APP ?= "/Users/greg/Desktop/ChimeraX-1.6.1.app/"
+CHIMERAX_APP ?= "/Users/greg/Desktop/ChimeraX-1.10.app"
 endif
 endif
 # Platform-dependent settings.  Should not need fixing.
