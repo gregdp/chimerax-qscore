@@ -1,8 +1,10 @@
 
 
-
-toFileName = "/Users/greg/Desktop/Residue_Qscores"
+# change to local file path to output residue q-scores:
+toFile = "/Users/greg/Desktop/Residue_Qscores"
+# change to resolution of map:
 r = 2.9
+# change "Reference Sigma" in Q-score dialog to 0.4
 
 mean = -0.0016*r*r*r+0.0434*r*r-0.3956*r+1.3366
 peak = mean+0.024
@@ -14,7 +16,7 @@ sel_residues_items = session.selection.items('residues')
 if len( sel_residues_items ) > 0 :
     sel_residues = sel_residues_items[0]
     chain = sel_residues[0].chain_id
-    outf = open ( toFileName + "_%s.txt" % chain, "w" )
+    outf = open ( toFile + "_%s.txt" % chain, "w" )
     outf.write ( "Residue\tNum\tQ-score\tPeak\tLow_Q\tHigh_Q\n" )
     for res in sel_residues :
         qscores = [at.qscore for at in res.atoms]
