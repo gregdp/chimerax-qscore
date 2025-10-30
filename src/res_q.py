@@ -18,7 +18,6 @@ if len( sel_residues_items ) > 0 :
     if len(sel_residues) == 1 :
         res = sel_residues[0]
         qscores = [at.qscore for at in res.atoms if at.element != "H"]
-        print ( len(qscores) )
         res_q = sum (qscores) / len (qscores)
         print ( "Residue: %s %s/:%d Q-score: %.2f\n" % (res.name, res.chain_id, res.number, res_q) )
     else :
