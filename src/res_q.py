@@ -10,7 +10,7 @@ mean = -0.0016*r*r*r+0.0434*r*r-0.3956*r+1.3366
 peak = mean+0.024
 low = mean-0.126
 high = mean+0.109
-print("\nQ - peak:%.2f, low:%.2f, high:%.2f"%(peak,low,high))
+print("\nQ-score at %.2f A - peak:%.2f, low:%.2f, high:%.2f"%(r, peak,low,high))
 
 sel_residues_items = session.selection.items('residues')
 if len( sel_residues_items ) > 0 :
