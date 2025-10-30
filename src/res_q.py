@@ -4,7 +4,8 @@
 toFile = "/Users/greg/Desktop/Residue_Qscores"
 # change to resolution of map:
 r = 1.9
-# change "Reference Sigma" in Q-score dialog to 0.4
+
+# !! change "Reference Sigma" in Q-score dialog to 0.4 !!
 
 mean = -0.0016*r*r*r+0.0434*r*r-0.3956*r+1.3366
 peak = mean+0.024
